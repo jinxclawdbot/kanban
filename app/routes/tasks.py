@@ -45,10 +45,52 @@ async def get_priorities(current_user: User = Depends(get_current_active_user)):
 
 @router.get("/categories")
 async def get_categories(current_user: User = Depends(get_current_active_user)):
-    """Get all unique categories from existing tasks."""
+    """Get all categories (from storage + existing tasks)."""
+    from ..storage import category_storage
+    
+    # Get stored categories
+    stored_cats = set(category_storage.get_all())
+    
+    # Get categories from existing tasks
     tasks = task_storage.get_all()
-    categories = set(t.category for t in tasks if t.category)
-    return {"categories": sorted(categories)}
+    task_cats = set(t.category for t in tasks if t.category)
+    
+    # Combine and sort
+    all_categories = sorted(stored_cats | task_cats)
+    return {"categories": all_categories}
+
+
+@router.post("/categories")
+async def create_category(
+    name: str,
+    current_user: User = Depends(get_current_active_user)
+):
+    """Create a new category."""
+    from ..storage import category_storage
+    
+    name = name.strip()
+    if not name:
+        raise HTTPException(status_code=400, detail="Category name cannot be empty")
+    
+    if len(name) > 50:
+        raise HTTPException(status_code=400, detail="Category name too long (max 50 chars)")
+    
+    category_storage.add(name)
+    return {"message": f"Category '{name}' created", "category": name}
+
+
+@router.delete("/categories/{name}")
+async def delete_category(
+    name: str,
+    current_user: User = Depends(get_current_active_user)
+):
+    """Delete a category."""
+    from ..storage import category_storage
+    
+    if category_storage.delete(name):
+        return {"message": f"Category '{name}' deleted"}
+    else:
+        raise HTTPException(status_code=404, detail="Category not found")
 
 
 @router.get("/board")

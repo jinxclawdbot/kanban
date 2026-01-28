@@ -10,6 +10,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 DATA_DIR = Path(os.getenv("KANBAN_DATA_DIR", BASE_DIR / "data"))
 TASKS_FILE = DATA_DIR / "tasks.json"
 USERS_FILE = DATA_DIR / "users.json"
+CATEGORIES_FILE = DATA_DIR / "categories.json"
 
 # Security
 SECRET_KEY = os.getenv("KANBAN_SECRET_KEY", "change-this-in-production-use-a-real-secret-key")

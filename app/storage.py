@@ -7,7 +7,7 @@ from datetime import datetime
 import threading
 
 from .models import Task, User
-from .config import TASKS_FILE, USERS_FILE, DATA_DIR
+from .config import TASKS_FILE, USERS_FILE, CATEGORIES_FILE, DATA_DIR
 
 
 class JSONStorage:
@@ -132,8 +132,67 @@ class UserStorage(JSONStorage):
     def exists(self, username: str) -> bool:
         """Check if a user exists."""
         return self.get_by_username(username) is not None
+    
+    def update(self, user: User) -> User:
+        """Update an existing user."""
+        data = self._read_data()
+        for i, item in enumerate(data):
+            if item['username'] == user.username:
+                data[i] = user.model_dump()
+                self._write_data(data)
+                return user
+        raise ValueError(f"User {user.username} not found")
+    
+    def list_all(self) -> list:
+        """List all users."""
+        data = self._read_data()
+        return [User(**item) for item in data]
+    
+    def delete(self, username: str) -> bool:
+        """Delete a user by username."""
+        data = self._read_data()
+        new_data = [item for item in data if item['username'] != username]
+        if len(new_data) == len(data):
+            return False
+        self._write_data(new_data)
+        return True
+
+
+class CategoryStorage(JSONStorage):
+    """Storage for categories."""
+    
+    def __init__(self):
+        super().__init__(CATEGORIES_FILE)
+    
+    def get_all(self) -> List[str]:
+        """Get all categories."""
+        data = self._read_data()
+        return sorted(data)
+    
+    def add(self, category: str) -> bool:
+        """Add a new category."""
+        data = self._read_data()
+        if category not in data:
+            data.append(category)
+            self._write_data(sorted(data))
+            return True
+        return False
+    
+    def delete(self, category: str) -> bool:
+        """Delete a category."""
+        data = self._read_data()
+        if category in data:
+            data.remove(category)
+            self._write_data(data)
+            return True
+        return False
+    
+    def exists(self, category: str) -> bool:
+        """Check if a category exists."""
+        return category in self._read_data()
 
 
 # Singleton instances
 task_storage = TaskStorage()
 user_storage = UserStorage()
+category_storage = CategoryStorage()

@@ -69,6 +69,14 @@ async function showApp() {
         currentUser = await response.json();
         document.getElementById('user-display').textContent = `👤 ${currentUser.username}`;
         
+        // Show/hide admin features
+        const usersBtn = document.getElementById('users-btn');
+        if (currentUser.is_admin) {
+            usersBtn.style.display = 'block';
+        } else {
+            usersBtn.style.display = 'none';
+        }
+        
         document.getElementById('login-section').style.display = 'none';
         document.getElementById('app-section').style.display = 'block';
         
@@ -109,8 +117,22 @@ async function loadCategories() {
         if (!response.ok) return;
         
         const data = await response.json();
-        const datalist = document.getElementById('categories-list');
-        datalist.innerHTML = data.categories.map(c => `<option value="${c}">`).join('');
+        const select = document.getElementById('task-category');
+        const currentValue = select.value;
+        
+        // Build options
+        select.innerHTML = '<option value="">-- No Category --</option>';
+        data.categories.forEach(cat => {
+            const option = document.createElement('option');
+            option.value = cat;
+            option.textContent = cat;
+            select.appendChild(option);
+        });
+        
+        // Restore selection if it still exists
+        if (currentValue) {
+            select.value = currentValue;
+        }
     } catch (error) {
         console.error('Error loading categories:', error);
     }
@@ -302,10 +324,11 @@ async function handleDrop(e) {
 
 // ============ Modal Functions ============
 
-function showCreateModal() {
+async function showCreateModal() {
     document.getElementById('modal-title').textContent = 'New Task';
     document.getElementById('task-form').reset();
     document.getElementById('task-id').value = '';
+    await loadCategories();
     document.getElementById('task-modal').showModal();
 }
 
@@ -315,6 +338,9 @@ async function editTask(taskId) {
         if (!response.ok) throw new Error('Failed to load task');
         
         const task = await response.json();
+        
+        // Load categories first to ensure dropdown is populated
+        await loadCategories();
         
         document.getElementById('modal-title').textContent = 'Edit Task';
         document.getElementById('task-id').value = task.id;
@@ -398,12 +424,277 @@ async function handleDelete() {
     }
 }
 
+// ============ Category Management Functions ============
+
+async function showCategoriesModal() {
+    document.getElementById('create-category-form').reset();
+    document.getElementById('create-category-error').style.display = 'none';
+    document.getElementById('create-category-success').style.display = 'none';
+    await loadCategoriesList();
+    document.getElementById('categories-modal').showModal();
+}
+
+function closeCategoriesModal() {
+    document.getElementById('categories-modal').close();
+}
+
+async function loadCategoriesList() {
+    try {
+        const response = await fetchWithAuth(`${API_BASE}/tasks/categories`);
+        if (!response.ok) throw new Error('Failed to load categories');
+        
+        const data = await response.json();
+        const listEl = document.getElementById('categories-list');
+        
+        if (data.categories.length === 0) {
+            listEl.innerHTML = '<p style="color: var(--pico-muted-color);">No categories yet. Create one above!</p>';
+            return;
+        }
+        
+        listEl.innerHTML = '';
+        data.categories.forEach(cat => {
+            const div = document.createElement('div');
+            div.className = 'category-item';
+            div.style.cssText = 'display: flex; justify-content: space-between; align-items: center; padding: 0.5rem; border-bottom: 1px solid var(--pico-muted-border-color);';
+            
+            const span = document.createElement('span');
+            span.textContent = '🏷️ ' + cat;
+            
+            const btn = document.createElement('button');
+            btn.className = 'outline contrast small';
+            btn.textContent = 'Delete';
+            btn.onclick = () => deleteCategory(cat);
+            
+            div.appendChild(span);
+            div.appendChild(btn);
+            listEl.appendChild(div);
+        });
+    } catch (error) {
+        console.error('Error loading categories:', error);
+    }
+}
+
+async function handleCreateCategory(event) {
+    event.preventDefault();
+    
+    const name = document.getElementById('new-category-name').value.trim();
+    
+    const errorDiv = document.getElementById('create-category-error');
+    const successDiv = document.getElementById('create-category-success');
+    
+    errorDiv.style.display = 'none';
+    successDiv.style.display = 'none';
+    
+    try {
+        const response = await fetchWithAuth(`${API_BASE}/tasks/categories?name=${encodeURIComponent(name)}`, {
+            method: 'POST'
+        });
+        
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.detail || 'Failed to create category');
+        }
+        
+        successDiv.textContent = `Category "${name}" created!`;
+        successDiv.style.display = 'block';
+        document.getElementById('create-category-form').reset();
+        await loadCategoriesList();
+        await loadCategories(); // Refresh the datalist in task form
+        
+    } catch (error) {
+        errorDiv.textContent = error.message;
+        errorDiv.style.display = 'block';
+    }
+}
+
+async function deleteCategory(name) {
+    if (!confirm(`Delete category "${name}"? Tasks using this category will keep it.`)) return;
+    
+    try {
+        const response = await fetchWithAuth(`${API_BASE}/tasks/categories/${encodeURIComponent(name)}`, {
+            method: 'DELETE'
+        });
+        
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.detail || 'Failed to delete category');
+        }
+        
+        await loadCategoriesList();
+        await loadCategories(); // Refresh the datalist in task form
+    } catch (error) {
+        alert(error.message);
+    }
+}
+
+// ============ User Management Functions (Admin Only) ============
+
+async function showUsersModal() {
+    document.getElementById('create-user-form').reset();
+    document.getElementById('create-user-error').style.display = 'none';
+    document.getElementById('create-user-success').style.display = 'none';
+    await loadUsersList();
+    document.getElementById('users-modal').showModal();
+}
+
+function closeUsersModal() {
+    document.getElementById('users-modal').close();
+}
+
+async function loadUsersList() {
+    try {
+        const response = await fetchWithAuth(`${API_BASE}/auth/users`);
+        if (!response.ok) throw new Error('Failed to load users');
+        
+        const data = await response.json();
+        const listEl = document.getElementById('users-list');
+        
+        listEl.innerHTML = data.users.map(user => `
+            <div class="user-item" style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem; border-bottom: 1px solid var(--pico-muted-border-color);">
+                <span>
+                    ${user.username}
+                    ${user.is_admin ? '<small style="color: var(--pico-primary);">(admin)</small>' : ''}
+                </span>
+                ${user.username !== 'admin' ? `<button class="outline contrast small" onclick="deleteUser('${user.username}')">Delete</button>` : '<small style="color: var(--pico-muted-color);">protected</small>'}
+            </div>
+        `).join('');
+    } catch (error) {
+        console.error('Error loading users:', error);
+    }
+}
+
+async function handleCreateUser(event) {
+    event.preventDefault();
+    
+    const username = document.getElementById('new-username').value;
+    const password = document.getElementById('new-user-password').value;
+    
+    const errorDiv = document.getElementById('create-user-error');
+    const successDiv = document.getElementById('create-user-success');
+    
+    errorDiv.style.display = 'none';
+    successDiv.style.display = 'none';
+    
+    try {
+        const response = await fetchWithAuth(`${API_BASE}/auth/register`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, password })
+        });
+        
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.detail || 'Failed to create user');
+        }
+        
+        successDiv.textContent = `User "${username}" created!`;
+        successDiv.style.display = 'block';
+        document.getElementById('create-user-form').reset();
+        await loadUsersList();
+        
+    } catch (error) {
+        errorDiv.textContent = error.message;
+        errorDiv.style.display = 'block';
+    }
+}
+
+async function deleteUser(username) {
+    if (!confirm(`Delete user "${username}"?`)) return;
+    
+    try {
+        const response = await fetchWithAuth(`${API_BASE}/auth/users/${username}`, {
+            method: 'DELETE'
+        });
+        
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.detail || 'Failed to delete user');
+        }
+        
+        await loadUsersList();
+    } catch (error) {
+        alert(error.message);
+    }
+}
+
+// ============ Password Change Functions ============
+
+function showPasswordModal() {
+    document.getElementById('password-form').reset();
+    document.getElementById('password-error').style.display = 'none';
+    document.getElementById('password-success').style.display = 'none';
+    document.getElementById('password-modal').showModal();
+}
+
+function closePasswordModal() {
+    document.getElementById('password-modal').close();
+}
+
+async function handlePasswordChange(event) {
+    event.preventDefault();
+    
+    const currentPassword = document.getElementById('current-password').value;
+    const newPassword = document.getElementById('new-password').value;
+    const confirmPassword = document.getElementById('confirm-password').value;
+    
+    const errorDiv = document.getElementById('password-error');
+    const successDiv = document.getElementById('password-success');
+    
+    errorDiv.style.display = 'none';
+    successDiv.style.display = 'none';
+    
+    // Validate passwords match
+    if (newPassword !== confirmPassword) {
+        errorDiv.textContent = 'New passwords do not match';
+        errorDiv.style.display = 'block';
+        return;
+    }
+    
+    // Validate password length
+    if (newPassword.length < 8) {
+        errorDiv.textContent = 'Password must be at least 8 characters';
+        errorDiv.style.display = 'block';
+        return;
+    }
+    
+    try {
+        const response = await fetchWithAuth(`${API_BASE}/auth/change-password`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                current_password: currentPassword,
+                new_password: newPassword
+            })
+        });
+        
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.detail || 'Failed to change password');
+        }
+        
+        successDiv.textContent = 'Password changed successfully!';
+        successDiv.style.display = 'block';
+        
+        // Close modal after 2 seconds
+        setTimeout(() => {
+            closePasswordModal();
+        }, 2000);
+        
+    } catch (error) {
+        errorDiv.textContent = error.message;
+        errorDiv.style.display = 'block';
+    }
+}
+
 // ============ Initialization ============
 
 document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('login-form').addEventListener('submit', login);
     document.getElementById('task-form').addEventListener('submit', handleTaskSubmit);
     document.getElementById('confirm-delete-btn').addEventListener('click', handleDelete);
+    document.getElementById('password-form').addEventListener('submit', handlePasswordChange);
+    document.getElementById('create-user-form').addEventListener('submit', handleCreateUser);
+    document.getElementById('create-category-form').addEventListener('submit', handleCreateCategory);
     
     // Check for existing session
     if (token) {

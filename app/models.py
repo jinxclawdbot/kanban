@@ -54,6 +54,7 @@ class User(BaseModel):
     username: str
     hashed_password: str
     disabled: bool = False
+    is_admin: bool = False
 
 
 class UserCreate(BaseModel):
@@ -71,3 +72,9 @@ class Token(BaseModel):
 class TokenData(BaseModel):
     """Data extracted from JWT token."""
     username: Optional[str] = None
+
+
+class PasswordChange(BaseModel):
+    """Model for changing password."""
+    current_password: str
+    new_password: str = Field(..., min_length=8)

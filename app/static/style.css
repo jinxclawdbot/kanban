@@ -28,6 +28,14 @@
     background: rgba(220, 53, 69, 0.1);
 }
 
+.success-message {
+    color: var(--pico-color-green-500, #198754);
+    margin-top: 1rem;
+    padding: 0.5rem;
+    border-radius: var(--pico-border-radius);
+    background: rgba(25, 135, 84, 0.1);
+}
+
 /* Header */
 .app-header {
     background: var(--pico-background-color);
