@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kanban Board</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <!-- Login Section -->
+    <div id="login-section" class="container">
+        <article class="login-card">
+            <header>
+                <h2>🎯 Kanban Board</h2>
+            </header>
+            <form id="login-form">
+                <label for="username">Username</label>
+                <input type="text" id="username" name="username" placeholder="Enter username" required>
+                
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" placeholder="Enter password" required>
+                
+                <button type="submit">Login</button>
+            </form>
+            <div id="login-error" class="error-message" style="display: none;"></div>
+        </article>
+    </div>
+
+    <!-- Main App Section -->
+    <div id="app-section" style="display: none;">
+        <header class="container-fluid app-header">
+            <nav>
+                <ul>
+                    <li><strong>🎯 Kanban Board</strong></li>
+                </ul>
+                <ul>
+                    <li><span id="user-display"></span></li>
+                    <li><button class="outline" onclick="showCreateModal()">+ New Task</button></li>
+                    <li><button class="secondary outline" onclick="logout()">Logout</button></li>
+                </ul>
+            </nav>
+        </header>
+
+        <main class="container-fluid">
+            <div id="board" class="board">
+                <!-- Columns will be rendered here -->
+            </div>
+        </main>
+    </div>
+
+    <!-- Create/Edit Task Modal -->
+    <dialog id="task-modal">
+        <article>
+            <header>
+                <button aria-label="Close" class="close" onclick="closeModal()"></button>
+                <h3 id="modal-title">New Task</h3>
+            </header>
+            <form id="task-form">
+                <input type="hidden" id="task-id">
+                
+                <label for="task-title">Title *</label>
+                <input type="text" id="task-title" required maxlength="200">
+                
+                <label for="task-description">Description</label>
+                <textarea id="task-description" rows="3" maxlength="2000"></textarea>
+                
+                <div class="grid">
+                    <div>
+                        <label for="task-priority">Priority</label>
+                        <select id="task-priority">
+                            <option value="High">High</option>
+                            <option value="Medium" selected>Medium</option>
+                            <option value="Low">Low</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="task-category">Category</label>
+                        <input type="text" id="task-category" list="categories-list" maxlength="50">
+                        <datalist id="categories-list"></datalist>
+                    </div>
+                </div>
+                
+                <div class="grid">
+                    <div>
+                        <label for="task-column">Column</label>
+                        <select id="task-column">
+                            <option value="Recurring">Recurring</option>
+                            <option value="Backlog" selected>Backlog</option>
+                            <option value="In Progress">In Progress</option>
+                            <option value="Review">Review</option>
+                            <option value="Done">Done</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="task-due-date">Due Date</label>
+                        <input type="datetime-local" id="task-due-date">
+                    </div>
+                </div>
+                
+                <footer>
+                    <button type="button" class="secondary" onclick="closeModal()">Cancel</button>
+                    <button type="submit">Save Task</button>
+                </footer>
+            </form>
+        </article>
+    </dialog>
+
+    <!-- Delete Confirmation Modal -->
+    <dialog id="delete-modal">
+        <article>
+            <header>
+                <h3>Delete Task</h3>
+            </header>
+            <p>Are you sure you want to delete this task?</p>
+            <footer>
+                <button class="secondary" onclick="closeDeleteModal()">Cancel</button>
+                <button class="contrast" id="confirm-delete-btn">Delete</button>
+            </footer>
+        </article>
+    </dialog>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>
