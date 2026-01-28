@@ -97,10 +97,10 @@
                         </select>
                     </div>
                     <div>
-                        <label for="task-due-date">Due Date</label>
-                        <div class="grid">
+                        <label for="task-due-date">Due Date & Time</label>
+                        <div class="due-datetime-row">
                             <input type="date" id="task-due-date">
-                            <select id="task-due-hour">
+                            <select id="task-due-hour" aria-label="Hour">
                                 <option value="">HH</option>
                                 <option value="00">00</option>
                                 <option value="01">01</option>
@@ -127,7 +127,7 @@
                                 <option value="22">22</option>
                                 <option value="23">23</option>
                             </select>
-                            <select id="task-due-minute">
+                            <select id="task-due-minute" aria-label="Minute">
                                 <option value="">MM</option>
                                 <option value="00">00</option>
                                 <option value="15">15</option>

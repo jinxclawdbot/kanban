@@ -36,6 +36,24 @@
     background: rgba(25, 135, 84, 0.1);
 }
 
+/* Task modal styling */
+#task-modal article {
+    min-width: min(550px, 90vw);
+}
+
+/* Due date/time row */
+.due-datetime-row {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr;
+    gap: 0.5rem;
+    align-items: end;
+}
+
+.due-datetime-row input,
+.due-datetime-row select {
+    margin-bottom: 0;
+}
+
 /* Header */
 .app-header {
     background: var(--pico-background-color);
