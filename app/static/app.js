@@ -353,12 +353,13 @@ async function editTask(taskId) {
         if (task.due_date) {
             const date = new Date(task.due_date);
             document.getElementById('task-due-date').value = date.toISOString().slice(0, 10);
-            const hours = date.getHours().toString().padStart(2, '0');
-            const minutes = (Math.round(date.getMinutes() / 15) * 15 % 60).toString().padStart(2, '0');
-            document.getElementById('task-due-time').value = `${hours}:${minutes}`;
+            document.getElementById('task-due-hour').value = date.getHours().toString().padStart(2, '0');
+            const roundedMinutes = Math.round(date.getMinutes() / 15) * 15 % 60;
+            document.getElementById('task-due-minute').value = roundedMinutes.toString().padStart(2, '0');
         } else {
             document.getElementById('task-due-date').value = '';
-            document.getElementById('task-due-time').value = '';
+            document.getElementById('task-due-hour').value = '';
+            document.getElementById('task-due-minute').value = '';
         }
         
         document.getElementById('task-modal').showModal();
@@ -377,16 +378,15 @@ async function handleTaskSubmit(event) {
     
     const taskId = document.getElementById('task-id').value;
     const dueDate = document.getElementById('task-due-date').value;
-    const dueTime = document.getElementById('task-due-time').value;
+    const dueHour = document.getElementById('task-due-hour').value;
+    const dueMinute = document.getElementById('task-due-minute').value;
     
-    // Combine date and time
+    // Combine date, hour, and minute
     let dueDateISO = null;
     if (dueDate) {
-        if (dueTime) {
-            dueDateISO = new Date(`${dueDate}T${dueTime}:00`).toISOString();
-        } else {
-            dueDateISO = new Date(`${dueDate}T00:00:00`).toISOString();
-        }
+        const hour = dueHour || '00';
+        const minute = dueMinute || '00';
+        dueDateISO = new Date(`${dueDate}T${hour}:${minute}:00`).toISOString();
     }
     
     const taskData = {
