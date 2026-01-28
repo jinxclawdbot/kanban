@@ -37,6 +37,9 @@
                 <ul>
                     <li><span id="user-display"></span></li>
                     <li><button class="outline" onclick="showCreateModal()">+ New Task</button></li>
+                    <li><button class="secondary outline" onclick="showCategoriesModal()">🏷️ Categories</button></li>
+                    <li id="users-btn" style="display: none;"><button class="secondary outline" onclick="showUsersModal()">👥 Users</button></li>
+                    <li><button class="secondary outline" onclick="showPasswordModal()">🔐</button></li>
                     <li><button class="secondary outline" onclick="logout()">Logout</button></li>
                 </ul>
             </nav>
@@ -76,8 +79,9 @@
                     </div>
                     <div>
                         <label for="task-category">Category</label>
-                        <input type="text" id="task-category" list="categories-list" maxlength="50">
-                        <datalist id="categories-list"></datalist>
+                        <select id="task-category">
+                            <option value="">-- No Category --</option>
+                        </select>
                     </div>
                 </div>
                 
@@ -94,7 +98,7 @@
                     </div>
                     <div>
                         <label for="task-due-date">Due Date</label>
-                        <input type="datetime-local" id="task-due-date">
+                        <input type="datetime-local" id="task-due-date" step="900">
                     </div>
                 </div>
                 
@@ -117,6 +121,89 @@
                 <button class="secondary" onclick="closeDeleteModal()">Cancel</button>
                 <button class="contrast" id="confirm-delete-btn">Delete</button>
             </footer>
+        </article>
+    </dialog>
+
+    <!-- Categories Management Modal -->
+    <dialog id="categories-modal">
+        <article style="min-width: 400px;">
+            <header>
+                <button aria-label="Close" class="close" onclick="closeCategoriesModal()"></button>
+                <h3>🏷️ Manage Categories</h3>
+            </header>
+            
+            <h4>Add New Category</h4>
+            <form id="create-category-form">
+                <div class="grid">
+                    <input type="text" id="new-category-name" placeholder="Category name" required maxlength="50">
+                    <button type="submit">Add</button>
+                </div>
+                <div id="create-category-error" class="error-message" style="display: none;"></div>
+                <div id="create-category-success" class="success-message" style="display: none;"></div>
+            </form>
+            
+            <hr>
+            
+            <h4>Existing Categories</h4>
+            <div id="categories-list">
+                <!-- Categories will be rendered here -->
+            </div>
+        </article>
+    </dialog>
+
+    <!-- Users Management Modal (Admin Only) -->
+    <dialog id="users-modal">
+        <article style="min-width: 400px;">
+            <header>
+                <button aria-label="Close" class="close" onclick="closeUsersModal()"></button>
+                <h3>👥 Manage Users</h3>
+            </header>
+            
+            <h4>Create New User</h4>
+            <form id="create-user-form">
+                <div class="grid">
+                    <input type="text" id="new-username" placeholder="Username" required minlength="3">
+                    <input type="password" id="new-user-password" placeholder="Password" required minlength="8">
+                    <button type="submit">Add</button>
+                </div>
+                <div id="create-user-error" class="error-message" style="display: none;"></div>
+                <div id="create-user-success" class="success-message" style="display: none;"></div>
+            </form>
+            
+            <hr>
+            
+            <h4>Existing Users</h4>
+            <div id="users-list">
+                <!-- Users will be rendered here -->
+            </div>
+        </article>
+    </dialog>
+
+    <!-- Change Password Modal -->
+    <dialog id="password-modal">
+        <article>
+            <header>
+                <button aria-label="Close" class="close" onclick="closePasswordModal()"></button>
+                <h3>🔐 Change Password</h3>
+            </header>
+            <form id="password-form">
+                <label for="current-password">Current Password</label>
+                <input type="password" id="current-password" required>
+                
+                <label for="new-password">New Password</label>
+                <input type="password" id="new-password" required minlength="8">
+                
+                <label for="confirm-password">Confirm New Password</label>
+                <input type="password" id="confirm-password" required minlength="8">
+                
+                <div id="password-error" class="error-message" style="display: none;"></div>
+                <div id="password-success" class="success-message" style="display: none;"></div>
+                
+                <footer>
+                    <button type="button" class="secondary" onclick="closePasswordModal()">Cancel</button>
+                    <button type="submit">Change Password</button>
+                </footer>
+            </form>
         </article>
     </dialog>
 
