@@ -352,9 +352,13 @@ async function editTask(taskId) {
         
         if (task.due_date) {
             const date = new Date(task.due_date);
-            document.getElementById('task-due-date').value = date.toISOString().slice(0, 16);
+            document.getElementById('task-due-date').value = date.toISOString().slice(0, 10);
+            const hours = date.getHours().toString().padStart(2, '0');
+            const minutes = (Math.round(date.getMinutes() / 15) * 15 % 60).toString().padStart(2, '0');
+            document.getElementById('task-due-time').value = `${hours}:${minutes}`;
         } else {
             document.getElementById('task-due-date').value = '';
+            document.getElementById('task-due-time').value = '';
         }
         
         document.getElementById('task-modal').showModal();
@@ -373,6 +377,17 @@ async function handleTaskSubmit(event) {
     
     const taskId = document.getElementById('task-id').value;
     const dueDate = document.getElementById('task-due-date').value;
+    const dueTime = document.getElementById('task-due-time').value;
+    
+    // Combine date and time
+    let dueDateISO = null;
+    if (dueDate) {
+        if (dueTime) {
+            dueDateISO = new Date(`${dueDate}T${dueTime}:00`).toISOString();
+        } else {
+            dueDateISO = new Date(`${dueDate}T00:00:00`).toISOString();
+        }
+    }
     
     const taskData = {
         title: document.getElementById('task-title').value,
@@ -380,7 +395,7 @@ async function handleTaskSubmit(event) {
         priority: document.getElementById('task-priority').value,
         category: document.getElementById('task-category').value || null,
         column: document.getElementById('task-column').value,
-        due_date: dueDate ? new Date(dueDate).toISOString() : null
+        due_date: dueDateISO
     };
     
     try {
