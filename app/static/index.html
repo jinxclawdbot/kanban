@@ -1,11 +1,19 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="light">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kanban Board</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
     <link rel="stylesheet" href="/static/style.css">
+    <script>
+        // Apply theme before first paint to prevent flash
+        (function() {
+            var t = localStorage.getItem('kanban_theme') ||
+                    (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+            document.documentElement.setAttribute('data-theme', t);
+        })();
+    </script>
 </head>
 <body>
     <!-- Login Section -->
@@ -40,6 +48,7 @@
                     <li><button class="secondary outline" onclick="showCategoriesModal()">🏷️ Categories</button></li>
                     <li id="users-btn" style="display: none;"><button class="secondary outline" onclick="showUsersModal()">👥 Users</button></li>
                     <li><button class="secondary outline" onclick="showPasswordModal()">🔐</button></li>
+                    <li><button id="theme-toggle" class="theme-toggle" onclick="toggleTheme()" title="Toggle dark mode">🌙</button></li>
                     <li><button class="secondary outline" onclick="logout()">Logout</button></li>
                 </ul>
             </nav>

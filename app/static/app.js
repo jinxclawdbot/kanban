@@ -1,5 +1,38 @@
 // Kanban Board Application
 
+// ============ Theme Management ============
+
+function getPreferredTheme() {
+    const stored = localStorage.getItem('kanban_theme');
+    if (stored) return stored;
+    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+}
+
+function applyTheme(theme) {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('kanban_theme', theme);
+    const btn = document.getElementById('theme-toggle');
+    if (btn) {
+        btn.textContent = theme === 'dark' ? '☀️' : '🌙';
+        btn.title = theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode';
+    }
+}
+
+function toggleTheme() {
+    const current = document.documentElement.getAttribute('data-theme') || 'light';
+    applyTheme(current === 'dark' ? 'light' : 'dark');
+}
+
+// Apply immediately
+applyTheme(getPreferredTheme());
+
+// Listen for OS-level theme changes
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+    if (!localStorage.getItem('kanban_theme')) {
+        applyTheme(e.matches ? 'dark' : 'light');
+    }
+});
+
 const API_BASE = '/api';
 let token = localStorage.getItem('kanban_token');
 let currentUser = null;
