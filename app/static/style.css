@@ -1,17 +1,61 @@
 /* Kanban Board Styles */
 
-:root {
-    --column-bg: #f5f5f5;
+/* ============ Light Theme (default) ============ */
+:root,
+[data-theme="light"] {
+    --column-bg: #f0f2f5;
     --card-bg: #ffffff;
+    --card-shadow: rgba(0, 0, 0, 0.08);
+    --card-shadow-hover: rgba(0, 0, 0, 0.15);
     --priority-high: #dc3545;
-    --priority-medium: #ffc107;
+    --priority-medium: #e8a317;
     --priority-low: #28a745;
     --column-width: 280px;
+    --header-bg: #ffffff;
+    --header-border: #dee2e6;
+    --filter-btn-bg: transparent;
+    --filter-btn-hover: #e9ecef;
+    --filter-btn-border: #ced4da;
+    --filter-btn-text: #495057;
+    --badge-muted-bg: #e9ecef;
+    --badge-muted-text: #495057;
+    --drag-over-bg: rgba(13, 110, 253, 0.08);
 }
 
+/* ============ Dark Theme ============ */
 [data-theme="dark"] {
-    --column-bg: #1a1a2e;
-    --card-bg: #16213e;
+    --column-bg: #1e1e2e;
+    --card-bg: #2a2a3c;
+    --card-shadow: rgba(0, 0, 0, 0.3);
+    --card-shadow-hover: rgba(0, 0, 0, 0.5);
+    --priority-high: #ff6b7a;
+    --priority-medium: #ffb347;
+    --priority-low: #4cdf6b;
+    --header-bg: #181825;
+    --header-border: #313244;
+    --filter-btn-bg: transparent;
+    --filter-btn-hover: #313244;
+    --filter-btn-border: #45475a;
+    --filter-btn-text: #cdd6f4;
+    --badge-muted-bg: #313244;
+    --badge-muted-text: #bac2de;
+    --drag-over-bg: rgba(137, 180, 250, 0.1);
+}
+
+/* Theme toggle button */
+.theme-toggle {
+    background: none;
+    border: 1px solid var(--pico-muted-border-color);
+    border-radius: 0.5rem;
+    cursor: pointer;
+    font-size: 1.1rem;
+    padding: 0.25rem 0.5rem;
+    line-height: 1;
+    transition: background 0.2s;
+    margin: 0;
+}
+.theme-toggle:hover {
+    background: var(--filter-btn-hover, #e9ecef);
 }
 
 /* Login */
@@ -122,14 +166,14 @@
     padding: 0.75rem;
     margin-bottom: 0.5rem;
     cursor: grab;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 1px 3px var(--card-shadow);
     transition: transform 0.15s, box-shadow 0.15s;
     border-left: 4px solid var(--priority-medium);
 }
 
 .task-card:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 4px 12px var(--card-shadow-hover);
 }
 
 .task-card.dragging {
